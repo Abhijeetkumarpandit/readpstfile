@@ -33,7 +33,11 @@ def upload_pst():
     filepath = os.path.join("/tmp", file.filename)
     file.save(filepath)
 
-    emails = extract_emails(filepath)
+    try:
+        emails = extract_emails(filepath)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
     os.remove(filepath)  # Clean up the file after processing
     return jsonify(emails)
 
