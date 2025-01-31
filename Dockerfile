@@ -1,5 +1,5 @@
-# Use an official Python runtime as a parent image
-FROM python:3.8-slim
+# Use Python 3.9 as the base image instead of 3.8
+FROM python:3.9-slim
 
 # Set the working directory in the container
 WORKDIR /app
@@ -20,5 +20,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Expose the port the app runs on
 EXPOSE 5000
 
-# Run the Flask app
+# Start the Flask app when the container starts
 CMD ["python", "extract_pst.py"]
