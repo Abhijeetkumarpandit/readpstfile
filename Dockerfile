@@ -1,38 +1,41 @@
-# Use Python 3.9 as the base image
-FROM python:3.9-slim
+# Use an Ubuntu base image with Python 3.9
+FROM ubuntu:20.04
 
-# Install required system packages
+# Set non-interactive mode for apt-get
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3.9 and required dependencies
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    libffi-dev \
-    libtool \
+    python3.9 \
+    python3.9-dev \
+    python3.9-distutils \
+    python3-pip \
     autoconf \
-    libssl-dev \
-    curl \
+    automake \
+    autopoint \
+    libtool \
+    pkg-config \
+    gcc \
+    make \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
+# Install libpff from source
+RUN git clone https://github.com/libyal/libpff.git && \
+    cd libpff && \
+    ./autogen.sh && \
+    ./configure && \
+    make && \
+    make install
+
+# Install pypff with pip
+RUN pip3 install pypff
+
+# Set working directory
 WORKDIR /app
 
-# Download and install libpff
-RUN curl -L -o libpff.tar.gz https://github.com/libyal/libpff/releases/latest/download/libpff-alpha-linux.tar.gz && \
-    tar -xvzf libpff.tar.gz && \
-    cd libpff-* && \
-    ./configure && make && make install
+# Copy project files
+COPY . .
 
-# Clone and install pypff
-RUN git clone https://github.com/libyal/pypff.git && \
-    cd pypff && \
-    python setup.py install
-
-# Copy the application files
-COPY . /app
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Expose the port the app runs on
-EXPOSE 5000
-
-# Start the Flask app when the container starts
-CMD ["python", "extract_pst.py"]
+# Set entrypoint
+CMD ["python3.9", "extract_pst.py"]
