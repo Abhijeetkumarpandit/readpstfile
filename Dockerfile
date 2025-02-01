@@ -1,33 +1,31 @@
 # Use Python 3.9 as the base image
 FROM python:3.9-slim
 
-# Install required system packages for building pypff and libpff
+# Install required system packages
 RUN apt-get update && apt-get install -y \
     build-essential \
     libffi-dev \
     libtool \
     autoconf \
     libssl-dev \
-    wget \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and build libpff
-RUN wget https://github.com/libyal/libpff/releases/download/20201006/libpff-20201006.tar.gz && \
-    tar -xvzf libpff-20201006.tar.gz && \
-    cd libpff-20201006 && \
-    ./configure && \
-    make && \
-    make install
+# Set the working directory
+WORKDIR /app
 
-# Install pypff from the source (assuming it's available on GitHub)
+# Download and install libpff
+RUN curl -L -o libpff.tar.gz https://github.com/libyal/libpff/releases/latest/download/libpff-alpha-linux.tar.gz && \
+    tar -xvzf libpff.tar.gz && \
+    cd libpff-* && \
+    ./configure && make && make install
+
+# Clone and install pypff
 RUN git clone https://github.com/libyal/pypff.git && \
     cd pypff && \
     python setup.py install
 
-# Set the working directory in the container
-WORKDIR /app
-
-# Copy the current directory contents into the container at /app
+# Copy the application files
 COPY . /app
 
 # Install Python dependencies
